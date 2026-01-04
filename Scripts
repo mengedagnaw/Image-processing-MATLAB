@@ -1,0 +1,60 @@
+MATLAB Implementation:
+%%  1. Image Loading 
+
+I = imread( '/MATLAB Drive/crack3.png' ); 
+imshow(I);
+title( 'Original RGB Image' );
+pause(1);  % Pause to view the image
+
+%% Convert to grayscale:
+I_gray = im2gray(I);   
+figure, imshow(I_gray);
+title('Grayscale Image');
+pause(1);
+
+%% 2. Low-Pass Filtering (Gaussian Blur)
+sigma = 12;   % Standard deviation for Gaussian blur (adjustable)
+lowPassI = imgaussfilt(I_gray, sigma);  % Apply Gaussian blur
+figure, imshow(lowPassI);
+title(['Low Pass Filtered Image (Gaussian Blur, \sigma = ', num2str(sigma), ')']);
+pause(1);
+
+
+%% 3. High-Pass Filtering: Sobel Edge Detection
+highPassI = edge(lowPassI, 'sobel');  % Apply Sobel edge detection on the blurred image
+figure, imshow(highPassI);
+title('High Pass Filtered Image (Sobel on Low Pass Image)');
+pause(1);
+
+% Compare with direct Sobel edge detection on the grayscale image
+highPassOnlyI = edge(I_gray, 'sobel');  % Apply Sobel edge detection 
+figure, imshow(highPassOnlyI);
+title('High Pass Filtered Image (Sobel only)');
+pause(1);
+
+
+%% 4. Combined Filtering: Laplacian of Gaussian (LoG)
+% Apply LoG which combines Gaussian smoothing and Laplacian edge detection
+logI = edge(I_gray, 'log', 0.2, 0.95); % Parameters: threshold=0.2, sigma=0.95
+figure, imshow(logI);
+title('Combined LoG Filtered Image');
+pause(1);
+
+
+%% 5. Fracture Assessment via White Pixel Count
+% Count white pixels in the LoG edge-detected image
+numWhitePixels = sum(logI(:));
+disp(['White Pixel Count: ', num2str(numWhitePixels)]);
+
+
+#Test the filters above in the image using a script. Use an if-then elseif conditional statement to determine if a fracture exists using pixel count:
+
+% Define threshold for determining fracture presence (adjustable):  thresholdCount = 100;
+% Use conditional logic to decide on fracture detection
+if numWhitePixels > thresholdCount
+    disp('Fracture Detected: The white pixel count indicates a crack.');
+elseif numWhitePixels > 0 && numWhitePixels <= thresholdCount
+    disp('Possible Fracture: Low white pixel count suggests a minor defect.');
+else
+    disp('No Fracture Detected: The image does not show significant cracks.');
+end
